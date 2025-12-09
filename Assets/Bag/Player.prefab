@@ -1509,9 +1509,9 @@ MonoBehaviour:
   Animator: {fileID: 8687737207959842141}
   CameraPivot: {fileID: 1793217096709504560}
   CameraHandle: {fileID: 731564128534069688}
-  WalkSpeed: 2
-  SprintSpeed: 5
-  JumpImpulse: 10
+  WalkSpeed: 10
+  SprintSpeed: 20
+  JumpImpulse: 12
   UpGravity: -25
   DownGravity: -40
   RotationSpeed: 8
@@ -1588,10 +1588,10 @@ Rigidbody:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5609267092368825421}
-  serializedVersion: 5
+  serializedVersion: 4
   m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
+  m_Drag: 0
+  m_AngularDrag: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}
   m_InertiaTensor: {x: 1, y: 1, z: 1}
   m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}

@@ -4,166 +4,177 @@ using Fusion.Addons.SimpleKCC;
 
 namespace Starter.ThirdPersonCharacter
 {
-	/// <summary>
-	/// Main player scrip - controls player movement and animations.
-	/// </summary>
-	public sealed class Player : NetworkBehaviour
-	{
-		[Header("References")]
-		public SimpleKCC KCC;
-		public PlayerInput PlayerInput;
-		public Animator Animator;
-		public Transform CameraPivot;
-		public Transform CameraHandle;
+    /// <summary>
+    /// Main player script - controls player movement and animations.
+    /// </summary>
+    public sealed class Player : NetworkBehaviour
+    {
+        [Header("References")]
+        public SimpleKCC KCC;
+        public PlayerInput PlayerInput;
+        public Animator Animator;
+        public Transform CameraPivot;
+        public Transform CameraHandle;
 
-		[Header("Movement Setup")]
-		public float WalkSpeed = 2f;
-		public float SprintSpeed = 5f;
-		public float JumpImpulse = 10f;
-		public float UpGravity = 25f;
-		public float DownGravity = 40f;
-		public float RotationSpeed = 8f;
+        [Header("Movement Setup")]
+        public float WalkSpeed = 2f;
+        public float SprintSpeed = 5f;
+        public float JumpImpulse = 10f;
+        public float UpGravity = 25f;
+        public float DownGravity = 40f;
+        public float RotationSpeed = 8f;
 
-		[Header("Movement Accelerations")]
-		public float GroundAcceleration = 55f;
-		public float GroundDeceleration = 25f;
-		public float AirAcceleration = 25f;
-		public float AirDeceleration = 1.3f;
+        [Header("Movement Accelerations")]
+        public float GroundAcceleration = 55f;
+        public float GroundDeceleration = 25f;
+        public float AirAcceleration = 25f;
+        public float AirDeceleration = 1.3f;
 
-		[Header("Sounds")]
+        [Header("Sounds")]
         public AudioClip[] FootstepAudioClips;
-		public AudioClip LandingAudioClip;
-		[Range(0f, 1f)]
-		public float FootstepAudioVolume = 0.5f;
+        public AudioClip LandingAudioClip;
+        [Range(0f, 1f)]
+        public float FootstepAudioVolume = 0.5f;
 
-		[Networked]
-		private NetworkBool _isJumping { get; set; }
+        [Header("Ice Settings")]
+        public float IceSlideFactor = 0.5f; // cuánto se resbala
+        private bool _onIce;
 
-		private Vector3 _moveVelocity;
+        [Networked]
+        private NetworkBool _isJumping { get; set; }
 
-		// Animation IDs
-		private int _animIDSpeed;
-		private int _animIDGrounded;
-		private int _animIDJump;
-		private int _animIDFreeFall;
-		private int _animIDMotionSpeed;
+        private Vector3 _moveVelocity;
 
-		public override void FixedUpdateNetwork()
-		{
-			ProcessInput(PlayerInput.CurrentInput);
+        // Animation IDs
+        private int _animIDSpeed;
+        private int _animIDGrounded;
+        private int _animIDJump;
+        private int _animIDFreeFall;
+        private int _animIDMotionSpeed;
 
-			if (KCC.IsGrounded)
-			{
-				// Stop jumping
-				_isJumping = false;
-			}
+        public override void FixedUpdateNetwork()
+        {
+            CheckIce();
+            ProcessInput(PlayerInput.CurrentInput);
 
-			PlayerInput.ResetInput();
-		}
+            if (KCC.IsGrounded)
+            {
+                // Stop jumping
+                _isJumping = false;
+            }
 
-		public override void Render()
-		{
-			Animator.SetFloat(_animIDSpeed, KCC.RealSpeed, 0.15f, Time.deltaTime);
-			Animator.SetFloat(_animIDMotionSpeed, 1f);
-			Animator.SetBool(_animIDJump, _isJumping);
-			Animator.SetBool(_animIDGrounded, KCC.IsGrounded);
-			Animator.SetBool(_animIDFreeFall, KCC.RealVelocity.y < -10f);
-		}
+            PlayerInput.ResetInput();
+        }
 
-		private void Awake()
-		{
-			AssignAnimationIDs();
-		}
+        public override void Render()
+        {
+            Animator.SetFloat(_animIDSpeed, KCC.RealSpeed, 0.15f, Time.deltaTime);
+            Animator.SetFloat(_animIDMotionSpeed, 1f);
+            Animator.SetBool(_animIDJump, _isJumping);
+            Animator.SetBool(_animIDGrounded, KCC.IsGrounded);
+            Animator.SetBool(_animIDFreeFall, KCC.RealVelocity.y < -10f);
+        }
 
-		private void LateUpdate()
-		{
-			// Only local player needs to update the camera
-			// Note: In shared mode the local player has always state authority over player's objects.
-			if (HasStateAuthority == false)
-				return;
+        private void Awake()
+        {
+            AssignAnimationIDs();
+        }
 
-			// Update camera pivot and transfer properties from camera handle to Main Camera.
-			CameraPivot.rotation = Quaternion.Euler(PlayerInput.CurrentInput.LookRotation);
-			Camera.main.transform.SetPositionAndRotation(CameraHandle.position, CameraHandle.rotation);
-		}
+        private void LateUpdate()
+        {
+            if (HasStateAuthority == false)
+                return;
 
-		private void ProcessInput(GameplayInput input)
-		{
-			float jumpImpulse = 0f;
+            CameraPivot.rotation = Quaternion.Euler(PlayerInput.CurrentInput.LookRotation);
+            Camera.main.transform.SetPositionAndRotation(CameraHandle.position, CameraHandle.rotation);
+        }
 
-			// Comparing current input buttons to previous input buttons - this prevents glitches when input is lost
-			if (KCC.IsGrounded && input.Jump)
-			{
-				// Set world space jump vector
-				jumpImpulse = JumpImpulse;
-				_isJumping = true;
-			}
+        private void CheckIce()
+        {
+            // Raycast hacia abajo para detectar hielo
+            if (Physics.Raycast(KCC.Transform.position + Vector3.up * 0.1f, Vector3.down, out RaycastHit hit, 1.5f))
+            {
+                _onIce = hit.collider.CompareTag("IcePlatform"); // asegúrate de que tus plataformas de hielo tengan esta tag
+            }
+            else
+            {
+                _onIce = false;
+            }
+        }
 
-			// It feels better when the player falls quicker
-			KCC.SetGravity(KCC.RealVelocity.y >= 0f ? UpGravity : DownGravity);
+        private void ProcessInput(GameplayInput input)
+        {
+            float jumpImpulse = 0f;
 
-			float speed = input.Sprint ? SprintSpeed : WalkSpeed;
+            if (KCC.IsGrounded && input.Jump)
+            {
+                jumpImpulse = JumpImpulse;
+                _isJumping = true;
+            }
 
-			var lookRotation = Quaternion.Euler(0f, input.LookRotation.y, 0f);
-			// Calculate correct move direction from input (rotated based on camera look)
-			var moveDirection = lookRotation * new Vector3(input.MoveDirection.x, 0f, input.MoveDirection.y);
-			var desiredMoveVelocity = moveDirection * speed;
+            KCC.SetGravity(KCC.RealVelocity.y >= 0f ? UpGravity : DownGravity);
 
-			float acceleration;
-			if (desiredMoveVelocity == Vector3.zero)
-			{
-				// No desired move velocity - we are stopping
-				acceleration = KCC.IsGrounded ? GroundDeceleration : AirDeceleration;
-			}
-			else
-			{
-				// Rotate the character towards move direction over time
-				var currentRotation = KCC.TransformRotation;
-				var targetRotation = Quaternion.LookRotation(moveDirection);
-				var nextRotation = Quaternion.Lerp(currentRotation, targetRotation, RotationSpeed * Runner.DeltaTime);
+            float speed = input.Sprint ? SprintSpeed : WalkSpeed;
+            var lookRotation = Quaternion.Euler(0f, input.LookRotation.y, 0f);
+            var moveDirection = lookRotation * new Vector3(input.MoveDirection.x, 0f, input.MoveDirection.y);
 
-				KCC.SetLookRotation(nextRotation.eulerAngles);
+            // Aplicamos deslizamiento solo si estamos sobre hielo
+            Vector3 desiredMoveVelocity = moveDirection * speed;
+            if (_onIce)
+            {
+                desiredMoveVelocity += _moveVelocity * IceSlideFactor;
+            }
 
-				acceleration = KCC.IsGrounded ? GroundAcceleration : AirAcceleration;
-			}
+            float acceleration;
+            if (desiredMoveVelocity == Vector3.zero)
+            {
+                acceleration = KCC.IsGrounded ? GroundDeceleration : AirDeceleration;
+            }
+            else
+            {
+                var currentRotation = KCC.TransformRotation;
+                var targetRotation = Quaternion.LookRotation(moveDirection);
+                var nextRotation = Quaternion.Lerp(currentRotation, targetRotation, RotationSpeed * Runner.DeltaTime);
 
-			_moveVelocity = Vector3.Lerp(_moveVelocity, desiredMoveVelocity, acceleration * Runner.DeltaTime);
+                KCC.SetLookRotation(nextRotation.eulerAngles);
 
-			// Ensure consistent movement speed even on steep slope
-			if (KCC.ProjectOnGround(_moveVelocity, out var projectedVector))
-			{
-				_moveVelocity = projectedVector;
-			}
+                acceleration = KCC.IsGrounded ? GroundAcceleration : AirAcceleration;
+            }
 
-			KCC.Move(_moveVelocity, jumpImpulse);
-		}
+            _moveVelocity = Vector3.Lerp(_moveVelocity, desiredMoveVelocity, acceleration * Runner.DeltaTime);
 
-		private void AssignAnimationIDs()
-		{
-			_animIDSpeed = Animator.StringToHash("Speed");
-			_animIDGrounded = Animator.StringToHash("Grounded");
-			_animIDJump = Animator.StringToHash("Jump");
-			_animIDFreeFall = Animator.StringToHash("FreeFall");
-			_animIDMotionSpeed = Animator.StringToHash("MotionSpeed");
-		}
+            if (KCC.ProjectOnGround(_moveVelocity, out var projectedVector))
+            {
+                _moveVelocity = projectedVector;
+            }
 
-		// Animation event
-		private void OnFootstep(AnimationEvent animationEvent)
-		{
-			if (animationEvent.animatorClipInfo.weight < 0.5f)
-				return;
+            KCC.Move(_moveVelocity, jumpImpulse);
+        }
 
-			if (FootstepAudioClips.Length > 0)
-			{
-				var index = Random.Range(0, FootstepAudioClips.Length);
-				AudioSource.PlayClipAtPoint(FootstepAudioClips[index], KCC.Position, FootstepAudioVolume);
-			}
-		}
+        private void AssignAnimationIDs()
+        {
+            _animIDSpeed = Animator.StringToHash("Speed");
+            _animIDGrounded = Animator.StringToHash("Grounded");
+            _animIDJump = Animator.StringToHash("Jump");
+            _animIDFreeFall = Animator.StringToHash("FreeFall");
+            _animIDMotionSpeed = Animator.StringToHash("MotionSpeed");
+        }
 
-		// Animation event
-		private void OnLand(AnimationEvent animationEvent)
-		{
-			AudioSource.PlayClipAtPoint(LandingAudioClip, KCC.Position, FootstepAudioVolume);
-		}
-	}
+        private void OnFootstep(AnimationEvent animationEvent)
+        {
+            if (animationEvent.animatorClipInfo.weight < 0.5f)
+                return;
+
+            if (FootstepAudioClips.Length > 0)
+            {
+                var index = Random.Range(0, FootstepAudioClips.Length);
+                AudioSource.PlayClipAtPoint(FootstepAudioClips[index], KCC.Position, FootstepAudioVolume);
+            }
+        }
+
+        private void OnLand(AnimationEvent animationEvent)
+        {
+            AudioSource.PlayClipAtPoint(LandingAudioClip, KCC.Position, FootstepAudioVolume);
+        }
+    }
 }

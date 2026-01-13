@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using Fusion;
-using Fusion.Addons.SimpleKCC;
+using Fusion.Addons.KCC;
 
 namespace Starter.ThirdPersonCharacter
 {
@@ -10,18 +10,17 @@ namespace Starter.ThirdPersonCharacter
     public sealed class Player : NetworkBehaviour
     {
         [Header("References")]
-        public SimpleKCC KCC;
+        public KCC kcc;
         public PlayerInput PlayerInput;
         public Animator Animator;
         public Transform CameraPivot;
         public Transform CameraHandle;
+        public PlayerLapController PlayerLapController;
 
         [Header("Movement Setup")]
         public float WalkSpeed = 2f;
         public float SprintSpeed = 5f;
         public float JumpImpulse = 10f;
-        public float UpGravity = 25f;
-        public float DownGravity = 40f;
         public float RotationSpeed = 8f;
 
         [Header("Movement Accelerations")]
@@ -52,27 +51,34 @@ namespace Starter.ThirdPersonCharacter
         private int _animIDFreeFall;
         private int _animIDMotionSpeed;
 
+        public override void Spawned()
+        {
+            kcc.SetManualUpdate(true);
+        }
+
         public override void FixedUpdateNetwork()
         {
             CheckIce();
             ProcessInput(PlayerInput.CurrentInput);
 
-            if (KCC.IsGrounded)
+            if (kcc.FixedData.IsGrounded)
             {
                 // Stop jumping
                 _isJumping = false;
             }
+            kcc.ManualFixedUpdate();
 
             PlayerInput.ResetInput();
         }
 
         public override void Render()
         {
-            Animator.SetFloat(_animIDSpeed, KCC.RealSpeed, 0.15f, Time.deltaTime);
+            Animator.SetFloat(_animIDSpeed, kcc.Data.RealSpeed, 0.15f, Time.deltaTime);
             Animator.SetFloat(_animIDMotionSpeed, 1f);
             Animator.SetBool(_animIDJump, _isJumping);
-            Animator.SetBool(_animIDGrounded, KCC.IsGrounded);
-            Animator.SetBool(_animIDFreeFall, KCC.RealVelocity.y < -10f);
+            Animator.SetBool(_animIDGrounded, kcc.Data.IsGrounded);
+            Animator.SetBool(_animIDFreeFall, kcc.Data.RealVelocity.y < -10f);
+            kcc.ManualRenderUpdate();
         }
 
         private void Awake()
@@ -92,7 +98,7 @@ namespace Starter.ThirdPersonCharacter
         private void CheckIce()
         {
             // Raycast hacia abajo para detectar hielo
-            if (Physics.Raycast(KCC.Transform.position + Vector3.up * 0.1f, Vector3.down, out RaycastHit hit, 1.5f))
+            if (Physics.Raycast(kcc.Transform.position + Vector3.up * 0.1f, Vector3.down, out RaycastHit hit, 1.5f))
             {
                 _onIce = hit.collider.CompareTag("IcePlatform"); // asegúrate de que tus plataformas de hielo tengan esta tag
             }
@@ -106,13 +112,11 @@ namespace Starter.ThirdPersonCharacter
         {
             float jumpImpulse = 0f;
 
-            if (KCC.IsGrounded && input.Jump)
+            if (kcc.FixedData.IsGrounded && input.Jump)
             {
-                jumpImpulse = JumpImpulse;
                 _isJumping = true;
+                jumpImpulse = JumpImpulse;
             }
-
-            KCC.SetGravity(KCC.RealVelocity.y >= 0f ? UpGravity : DownGravity);
 
             float speed = input.Sprint ? SprintSpeed : WalkSpeed;
             var lookRotation = Quaternion.Euler(0f, input.LookRotation.y, 0f);
@@ -128,27 +132,30 @@ namespace Starter.ThirdPersonCharacter
             float acceleration;
             if (desiredMoveVelocity == Vector3.zero)
             {
-                acceleration = KCC.IsGrounded ? GroundDeceleration : AirDeceleration;
+                acceleration = kcc.FixedData.IsGrounded ? GroundDeceleration : AirDeceleration;
             }
             else
             {
-                var currentRotation = KCC.TransformRotation;
+                var currentRotation = kcc.FixedData.TransformRotation;
                 var targetRotation = Quaternion.LookRotation(moveDirection);
                 var nextRotation = Quaternion.Lerp(currentRotation, targetRotation, RotationSpeed * Runner.DeltaTime);
 
-                KCC.SetLookRotation(nextRotation.eulerAngles);
+                kcc.Data.SetLookRotation(nextRotation.eulerAngles);
 
-                acceleration = KCC.IsGrounded ? GroundAcceleration : AirAcceleration;
+                acceleration = kcc.FixedData.IsGrounded ? GroundAcceleration : AirAcceleration;
             }
 
             _moveVelocity = Vector3.Lerp(_moveVelocity, desiredMoveVelocity, acceleration * Runner.DeltaTime);
 
-            if (KCC.ProjectOnGround(_moveVelocity, out var projectedVector))
+            if (kcc.FixedData.IsGrounded &&
+                 KCCPhysicsUtility.ProjectOnGround(kcc.FixedData.GroundNormal, _moveVelocity, out var projectedVector))
             {
                 _moveVelocity = projectedVector;
             }
 
-            KCC.Move(_moveVelocity, jumpImpulse);
+            kcc.SetInputDirection(_moveVelocity);
+            kcc.FixedData.JumpImpulse += Vector3.up * jumpImpulse;
+            
         }
 
         private void AssignAnimationIDs()
@@ -168,13 +175,13 @@ namespace Starter.ThirdPersonCharacter
             if (FootstepAudioClips.Length > 0)
             {
                 var index = Random.Range(0, FootstepAudioClips.Length);
-                AudioSource.PlayClipAtPoint(FootstepAudioClips[index], KCC.Position, FootstepAudioVolume);
+                AudioSource.PlayClipAtPoint(FootstepAudioClips[index], kcc.Data.TargetPosition, FootstepAudioVolume);
             }
         }
 
         private void OnLand(AnimationEvent animationEvent)
         {
-            AudioSource.PlayClipAtPoint(LandingAudioClip, KCC.Position, FootstepAudioVolume);
+            AudioSource.PlayClipAtPoint(LandingAudioClip, kcc.Data.TargetPosition, FootstepAudioVolume);
         }
     }
 }

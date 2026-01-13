@@ -10,6 +10,8 @@ namespace Starter.ThirdPersonCharacter
 	{
 		public NetworkObject PlayerPrefab;
 		public float SpawnRadius = 3f;
+		
+        public static Track CurrentTrack { get; private set; }
 
 		public override void Spawned()
 		{
@@ -23,5 +25,10 @@ namespace Starter.ThirdPersonCharacter
 		{
 			Gizmos.DrawWireSphere(transform.position, SpawnRadius);
 		}
+		
+        public static void SetTrack(Track track)
+        {
+            CurrentTrack = track;
+        }
 	}
 }

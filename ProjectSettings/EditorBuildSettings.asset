@@ -8,6 +8,15 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Bosque.unity
     guid: 99c9720ab356a0642a771bea13969a05
+  - enabled: 1
+    path: Assets/Scenes/Hielo.unity
+    guid: 84eb805b884a65e46af8fbcf087f195d
+  - enabled: 1
+    path: Assets/Scenes/Lava.unity
+    guid: 8298bb8e6b24a5c4fa0c52dfcd1b41a9
+  - enabled: 1
+    path: Assets/Scenes/Luna.unity
+    guid: 04da14629fcbde9459e698f821f51b41
   m_configObjects:
     com.unity.input.settings: {fileID: 11400000, guid: b5ec90d107c4c8c458c79d0b111d7f55, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}

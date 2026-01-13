@@ -1448,6 +1448,7 @@ GameObject:
   - component: {fileID: 8687737207959842141}
   - component: {fileID: 7119393216153697611}
   - component: {fileID: 5285971009042972272}
+  - component: {fileID: 2810913342881936136}
   m_Layer: 8
   m_Name: Player
   m_TagString: Player
@@ -1651,6 +1652,20 @@ MonoBehaviour:
     CompressNetworkPosition: 0
     ForceSingleOverlapQuery: 0
     SuppressConvexMeshColliders: 0
+--- !u!114 &2810913342881936136
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5609267092368825421}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c6f00dbc4697cd94aa71625a493ca6e6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  prefabUI: {fileID: 1074865911763766614, guid: 6008756976783bd40b39c0ab9ed08899, type: 3}
+  canvas: {fileID: 0}
 --- !u!1 &5670184363679267682
 GameObject:
   m_ObjectHideFlags: 0

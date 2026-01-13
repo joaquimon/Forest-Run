@@ -1,5 +1,6 @@
-﻿using UnityEngine;
-using Fusion;
+﻿using Fusion;
+using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace Starter.ThirdPersonCharacter
 {
@@ -10,6 +11,7 @@ namespace Starter.ThirdPersonCharacter
 	{
 		public NetworkObject PlayerPrefab;
 		public float SpawnRadius = 3f;
+		
 		
         public static Track CurrentTrack { get; private set; }
 
@@ -30,5 +32,22 @@ namespace Starter.ThirdPersonCharacter
         {
             CurrentTrack = track;
         }
-	}
+
+        public void NextLevel()
+        {
+            int currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
+            int nextSceneIndex = currentSceneIndex + 1;
+            if (nextSceneIndex < SceneManager.sceneCountInBuildSettings)
+            {
+                SceneManager.LoadScene(nextSceneIndex);
+            }
+            else
+            {
+                Debug.Log("No more levels to load.");
+            }
+        }
+    }
+
+
+
 }

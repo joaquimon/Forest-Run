@@ -122,7 +122,6 @@ namespace Starter.ThirdPersonCharacter
             var lookRotation = Quaternion.Euler(0f, input.LookRotation.y, 0f);
             var moveDirection = lookRotation * new Vector3(input.MoveDirection.x, 0f, input.MoveDirection.y);
 
-            // Aplicamos deslizamiento solo si estamos sobre hielo
             Vector3 desiredMoveVelocity = moveDirection * speed;
             if (_onIce)
             {

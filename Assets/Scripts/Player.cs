@@ -18,25 +18,25 @@ namespace Starter.ThirdPersonCharacter
         public PlayerLapController PlayerLapController;
 
         [Header("Movement Setup")]
-        public float WalkSpeed = 2f;
-        public float SprintSpeed = 5f;
+        public float WalkSpeed = 500f;
+        public float SprintSpeed = 1000f;
         public float JumpImpulse = 10f;
         public float RotationSpeed = 8f;
 
         [Header("Movement Accelerations")]
-        public float GroundAcceleration = 55f;
-        public float GroundDeceleration = 25f;
-        public float AirAcceleration = 25f;
-        public float AirDeceleration = 1.3f;
+        public float GroundAcceleration = 10f;
+        public float GroundDeceleration = 100f;
+        public float AirAcceleration = 10f;
+        public float AirDeceleration = 50f;
 
         [Header("Sounds")]
         public AudioClip[] FootstepAudioClips;
         public AudioClip LandingAudioClip;
         [Range(0f, 1f)]
-        public float FootstepAudioVolume = 0.5f;
+        public float FootstepAudioVolume = 0.3f;
 
         [Header("Ice Settings")]
-        public float IceSlideFactor = 0.5f; // cuánto se resbala
+        public float IceSlideFactor = 0.77f; // cuánto se resbala
         private bool _onIce;
 
         [Networked]
@@ -60,7 +60,6 @@ namespace Starter.ThirdPersonCharacter
         {
             CheckIce();
             ProcessInput(PlayerInput.CurrentInput);
-
             if (kcc.FixedData.IsGrounded)
             {
                 // Stop jumping
@@ -75,9 +74,9 @@ namespace Starter.ThirdPersonCharacter
         {
             Animator.SetFloat(_animIDSpeed, kcc.Data.RealSpeed, 0.15f, Time.deltaTime);
             Animator.SetFloat(_animIDMotionSpeed, 1f);
-            Animator.SetBool(_animIDJump, _isJumping);
-            Animator.SetBool(_animIDGrounded, kcc.Data.IsGrounded);
-            Animator.SetBool(_animIDFreeFall, kcc.Data.RealVelocity.y < -10f);
+            Animator.SetBool(_animIDJump, kcc.RenderData.HasJumped);
+            Animator.SetBool(_animIDGrounded, kcc.RenderData.IsGrounded);
+            Animator.SetBool(_animIDFreeFall, kcc.RenderData.RealVelocity.y < -2f);
             kcc.ManualRenderUpdate();
         }
 
@@ -88,7 +87,7 @@ namespace Starter.ThirdPersonCharacter
 
         private void LateUpdate()
         {
-            if (HasStateAuthority == false)
+            if (!HasStateAuthority)
                 return;
 
             CameraPivot.rotation = Quaternion.Euler(PlayerInput.CurrentInput.LookRotation);
@@ -110,19 +109,25 @@ namespace Starter.ThirdPersonCharacter
 
         private void ProcessInput(GameplayInput input)
         {
-            float jumpImpulse = 0f;
-
             if (kcc.FixedData.IsGrounded && input.Jump)
             {
                 _isJumping = true;
-                jumpImpulse = JumpImpulse;
+                kcc.Jump(Vector3.up * JumpImpulse);
             }
-
-            float speed = input.Sprint ? SprintSpeed : WalkSpeed;
+            
+            float speed = WalkSpeed;
+            if (kcc.FixedData.IsGrounded == true)
+            {
+                // Sprint is updated only when grounded.
+                kcc.SetSprint(input.Sprint);
+            }
+            Debug.Log("speed: "+speed);
+            
             var lookRotation = Quaternion.Euler(0f, input.LookRotation.y, 0f);
             var moveDirection = lookRotation * new Vector3(input.MoveDirection.x, 0f, input.MoveDirection.y);
 
             Vector3 desiredMoveVelocity = moveDirection * speed;
+            Debug.Log("desiredVelocity: "+desiredMoveVelocity);
             if (_onIce)
             {
                 desiredMoveVelocity += _moveVelocity * IceSlideFactor;
@@ -143,17 +148,18 @@ namespace Starter.ThirdPersonCharacter
 
                 acceleration = kcc.FixedData.IsGrounded ? GroundAcceleration : AirAcceleration;
             }
+            Debug.Log("acceleration: "+acceleration);
 
             _moveVelocity = Vector3.Lerp(_moveVelocity, desiredMoveVelocity, acceleration * Runner.DeltaTime);
+            Debug.Log("before finalVelocity: "+_moveVelocity);
 
             if (kcc.FixedData.IsGrounded &&
                  KCCPhysicsUtility.ProjectOnGround(kcc.FixedData.GroundNormal, _moveVelocity, out var projectedVector))
             {
                 _moveVelocity = projectedVector;
             }
-
+            Debug.Log("finalVelocity"+_moveVelocity);
             kcc.SetInputDirection(_moveVelocity);
-            kcc.FixedData.JumpImpulse += Vector3.up * jumpImpulse;
             
         }
 

@@ -1514,7 +1514,7 @@ MonoBehaviour:
   CameraHandle: {fileID: 731564128534069688}
   PlayerLapController: {fileID: 7119393216153697611}
   WalkSpeed: 10
-  SprintSpeed: 15
+  SprintSpeed: 25
   JumpImpulse: 10
   RotationSpeed: 8
   GroundAcceleration: 10
@@ -1608,7 +1608,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fac77d2d65784166812b5616d00cac80, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  canvas: {fileID: 0}
   _kcc: {fileID: 0}
+  prefabUI: {fileID: 0}
 --- !u!114 &5285971009042972272
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1644,6 +1646,7 @@ MonoBehaviour:
     - {fileID: 5676373106594474765, guid: 222c9056b455cf64d8e1f0b580db346a, type: 3}
     - {fileID: 561824206424634091, guid: 68c4081a63f1dfd469da9c95bea22158, type: 3}
     - {fileID: 2093064057704703403, guid: 5ec6749a6dd372142b2b0fd04e911033, type: 3}
+    - {fileID: -4514500717821726082, guid: 6e87955e8fb019e42a2c1b1ad4ccbeab, type: 3}
     MaxPenetrationSteps: 8
     CCDRadiusMultiplier: 0.75
     AntiJitterDistance: {x: 0.025, y: 0.01}

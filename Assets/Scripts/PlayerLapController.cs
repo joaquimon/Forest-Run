@@ -36,10 +36,20 @@ public class PlayerLapController : NetworkBehaviour
 
     public void ProcessFinishLine(FinishLine finishLine) 
     {
-        GameObject ui = Instantiate(prefabUI, canvas.transform);
-        ui.transform.SetAsLastSibling(); // opcional: arriba del todo
+        /*GameObject ui = Instantiate(prefabUI, canvas.transform);
+        ui.transform.SetAsLastSibling();*/
         
-
+        NextLevel();
+    }
+    
+    public void NextLevel()
+    {
+        int currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
+        int nextSceneIndex = currentSceneIndex + 1;
+        if (nextSceneIndex < SceneManager.sceneCountInBuildSettings)
+        {
+            Runner.LoadScene(SceneRef.FromIndex(nextSceneIndex));
+        }
     }
     
 }

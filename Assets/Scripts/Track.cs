@@ -7,7 +7,7 @@ public class Track : NetworkBehaviour
     public static Track Current { get; private set; }
 
     public Checkpoint[] checkpoints;
-    public Transform[] spawnpoints;
+    public Transform spawnpoint;
     public Transform finishLine;
     
     private void Awake()

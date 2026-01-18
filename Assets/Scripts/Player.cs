@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using Fusion;
 using Fusion.Addons.KCC;
+using UnityEngine.SceneManagement;
 
 namespace Starter.ThirdPersonCharacter
 {
@@ -19,8 +20,8 @@ namespace Starter.ThirdPersonCharacter
 
         [Header("Movement Setup")]
         public float WalkSpeed = 500f;
-        public float SprintSpeed = 1000f;
         public float JumpImpulse = 10f;
+        public float SprintSpeed = 1000f;
         public float RotationSpeed = 8f;
 
         [Header("Movement Accelerations")]
@@ -83,6 +84,10 @@ namespace Starter.ThirdPersonCharacter
         private void Awake()
         {
             AssignAnimationIDs();
+            if(SceneManager.GetActiveScene() == SceneManager.GetSceneByName("Luna"))
+            {
+                JumpImpulse = 25f;
+            }
         }
 
         private void LateUpdate()
@@ -121,13 +126,11 @@ namespace Starter.ThirdPersonCharacter
                 // Sprint is updated only when grounded.
                 kcc.SetSprint(input.Sprint);
             }
-            Debug.Log("speed: "+speed);
             
             var lookRotation = Quaternion.Euler(0f, input.LookRotation.y, 0f);
             var moveDirection = lookRotation * new Vector3(input.MoveDirection.x, 0f, input.MoveDirection.y);
 
             Vector3 desiredMoveVelocity = moveDirection * speed;
-            Debug.Log("desiredVelocity: "+desiredMoveVelocity);
             if (_onIce)
             {
                 desiredMoveVelocity += _moveVelocity * IceSlideFactor;
@@ -148,17 +151,14 @@ namespace Starter.ThirdPersonCharacter
 
                 acceleration = kcc.FixedData.IsGrounded ? GroundAcceleration : AirAcceleration;
             }
-            Debug.Log("acceleration: "+acceleration);
 
             _moveVelocity = Vector3.Lerp(_moveVelocity, desiredMoveVelocity, acceleration * Runner.DeltaTime);
-            Debug.Log("before finalVelocity: "+_moveVelocity);
 
             if (kcc.FixedData.IsGrounded &&
                  KCCPhysicsUtility.ProjectOnGround(kcc.FixedData.GroundNormal, _moveVelocity, out var projectedVector))
             {
                 _moveVelocity = projectedVector;
             }
-            Debug.Log("finalVelocity"+_moveVelocity);
             kcc.SetInputDirection(_moveVelocity);
             
         }

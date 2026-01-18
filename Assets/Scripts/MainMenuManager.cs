@@ -1,3 +1,4 @@
+using Fusion;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -7,7 +8,7 @@ public class MainMenuManager : MonoBehaviour
     public void StartGame()
     {
 
-        SceneManager.LoadScene("Bosque");
+        SceneManager.LoadScene(1);
 
     }
     public void QuitGame()

@@ -1,9 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Fusion;
+using Starter.ThirdPersonCharacter;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using Random = UnityEngine.Random;
 
 namespace Starter
 {
@@ -12,6 +15,7 @@ namespace Starter
 	/// </summary>
 	public class UIGameMenu : MonoBehaviour
 	{
+	
 		[Header("Start Game Setup")]
 		[Tooltip("Specifies which game mode player should join - e.g. Platformer, ThirdPersonCharacter")]
 		public string GameModeIdentifier;
@@ -33,13 +37,15 @@ namespace Starter
 		private NetworkRunner _runnerInstance;
 		private static string _shutdownStatus;
 
-		public async void StartGame()
+        public async void StartGame()
 		{
 			await Disconnect();
 
 			PlayerPrefs.SetString("PlayerName", NicknameText.text);
 
 			_runnerInstance = Instantiate(RunnerPrefab);
+			
+			GameManager.Instance.RegisterRunner(_runnerInstance);
 
 			// Add listener for shutdowns so we can handle unexpected shutdowns
 			var events = _runnerInstance.GetComponent<NetworkEvents>();

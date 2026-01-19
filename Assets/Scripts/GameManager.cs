@@ -4,6 +4,7 @@ using Fusion;
 using Fusion.Sockets;
 using UnityEngine;
 using Random = UnityEngine.Random;
+using UnityEngine.SceneManagement;
 
 namespace Starter.ThirdPersonCharacter
 {
@@ -103,6 +104,12 @@ namespace Starter.ThirdPersonCharacter
         public static void SetTrack(Track track)
         {
             CurrentTrack = track;
+        }
+
+        public void BackToMainMenu()
+        {
+            SceneManager.LoadScene("MainMenu");
+
         }
 
         #region Unused Callbacks

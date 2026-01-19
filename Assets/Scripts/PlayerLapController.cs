@@ -46,6 +46,10 @@ public class PlayerLapController : NetworkBehaviour
     {
         int currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
         int nextSceneIndex = currentSceneIndex + 1;
+        if (currentSceneIndex >= 4)
+        {
+            SceneManager.LoadScene("MainMenu");
+        }
         if (nextSceneIndex < SceneManager.sceneCountInBuildSettings)
         {
             Runner.LoadScene(SceneRef.FromIndex(nextSceneIndex));

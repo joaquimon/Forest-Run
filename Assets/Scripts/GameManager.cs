@@ -82,12 +82,17 @@ namespace Starter.ThirdPersonCharacter
             
             Vector3 spawnPosition = GetSpawnPosition();
 
-            runner.Spawn(
+           runner.Spawn(
                 PlayerPrefab,
                 spawnPosition,
                 Quaternion.identity,
                 localPlayer
             );
+        }
+        
+        public void OnShutdown(NetworkRunner runner, ShutdownReason shutdownReason)
+        {
+            PlayerRegistry.Clear();
         }
 
 		private void OnDrawGizmosSelected()
@@ -113,11 +118,6 @@ namespace Starter.ThirdPersonCharacter
         }
 
         public void OnPlayerLeft(NetworkRunner runner, PlayerRef player)
-        {
-            
-        }
-
-        public void OnShutdown(NetworkRunner runner, ShutdownReason shutdownReason)
         {
             
         }

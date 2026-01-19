@@ -520,6 +520,37 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 58bd84e6d51a2f44a9d4f19bb93f82d3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!1 &475388875
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 475388876}
+  m_Layer: 0
+  m_Name: PlayerRegistry
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &475388876
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 475388875}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.43143818, y: 7.403512, z: -44.960995}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &611459420
 GameObject:
   m_ObjectHideFlags: 0
@@ -2237,3 +2268,4 @@ SceneRoots:
   - {fileID: 1885798752}
   - {fileID: 2038888208}
   - {fileID: 353602565}
+  - {fileID: 475388876}
